@@ -5,28 +5,28 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.soviet.spring.models.User;
-import ru.soviet.spring.repository.UserRepository;
+import ru.soviet.spring.service.UserService;
 
 @Controller
 @RequestMapping("/")
 public class UsersController {
 
     @Autowired
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public UsersController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UsersController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping()
     public String index(Model model) {
-        model.addAttribute("users", userRepository.findAll());
+        model.addAttribute("users", userService.index());
         return "index";
     }
 
     @GetMapping("/{id}")
     public String show(@PathVariable("id") long id, Model model) {
-        model.addAttribute("person", userRepository.findById(id));
+        model.addAttribute("person", userService.show(id));
         return "show";
     }
 
@@ -38,26 +38,25 @@ public class UsersController {
 
     @PostMapping()
     public String create(@ModelAttribute("person") User user) {
-        userRepository.save(user);
+        userService.save(user);
         return "redirect:/";
     }
 
     @GetMapping("/{id}/edit")
     public String edit(Model model, @PathVariable("id") long id) {
-        model.addAttribute("person", userRepository.findById(id));
+        model.addAttribute("person", userService.show(id));
         return "edit";
     }
 
     @PatchMapping("/{id}")
-    public String update(@ModelAttribute("person") User user) {
-        userRepository.save(user);
-        return "redirect:/index";
+    public String update(@ModelAttribute("person") User updateUser) {
+        userService.save(updateUser);
+        return "redirect:/";
     }
 
     @DeleteMapping("/{id}")
     public String delete(@PathVariable("id") long id) {
-        User deletedUser = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Не существует пользователя с id:" + id));
-        userRepository.delete(deletedUser);
-        return "redirect:/index";
+        userService.delete(id);
+        return "redirect:/";
     }
 }
